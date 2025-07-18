@@ -19,6 +19,10 @@ class PDFRegionSelectorApp {
         this.minZoom = 0.5;
         this.zoomStep = 0.25;
         
+        // PDF History Manager
+        this.pdfHistoryManager = new PDFHistoryManager();
+        this.progressManager = new ProgressManager();
+        
         // Draggable controls state
         this.isDragging = false;
         this.dragOffset = { x: 0, y: 0 };
@@ -34,6 +38,7 @@ class PDFRegionSelectorApp {
         this.setupKeyboardShortcuts();
         this.createToastContainer();
         this.initializeSelectionMode();
+        this.updatePDFHistoryDisplay();
     }
 
     initializeSelectionMode() {
@@ -130,6 +135,10 @@ class PDFRegionSelectorApp {
         if (this.zoomInBtn) this.zoomInBtn.addEventListener('click', () => this.zoomIn());
         if (this.zoomOutBtn) this.zoomOutBtn.addEventListener('click', () => this.zoomOut());
         if (this.zoomResetBtn) this.zoomResetBtn.addEventListener('click', () => this.zoomReset());
+        
+        // PDF History buttons
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', () => this.clearPDFHistory());
     }
 
     setupKeyboardShortcuts() {
@@ -230,9 +239,93 @@ class PDFRegionSelectorApp {
         this.updateProgress(100, 'PDF hazırlanıyor...');
         await new Promise(resolve => setTimeout(resolve, 500));
         
+        // PDF'i geçmişe kaydet
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64Data = reader.result;
+            this.pdfHistoryManager.savePDFToHistory(file, base64Data);
+            this.updatePDFHistoryDisplay();
+        };
+        reader.readAsDataURL(file);
+        
         this.hideProcessing();
         this.showSelectionSection();
         this.showToast('PDF başarıyla yüklendi!', 'success');
+    }
+
+    // PDF History Display Functions
+    updatePDFHistoryDisplay() {
+        const history = this.pdfHistoryManager.loadPDFHistory();
+        const recentPdfsDiv = document.getElementById('recent-pdfs');
+        const pdfListDiv = document.getElementById('pdf-list');
+        
+        if (history.length > 0) {
+            recentPdfsDiv.style.display = 'block';
+            pdfListDiv.innerHTML = '';
+            
+            history.forEach(item => {
+                const pdfItem = document.createElement('div');
+                pdfItem.className = 'pdf-history-item';
+                pdfItem.innerHTML = `
+                    <div class="pdf-info">
+                        <div class="pdf-name">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>${item.name}</span>
+                        </div>
+                        <div class="pdf-details">
+                            <span class="pdf-size">${item.size}</span>
+                            <span class="pdf-date">${item.date}</span>
+                        </div>
+                    </div>
+                    <div class="pdf-actions">
+                        <button class="load-pdf-btn" onclick="app.loadPDFFromHistory('${item.id}')" title="PDF'i Yükle">
+                            <i class="fas fa-folder-open"></i>
+                        </button>
+                        <button class="remove-pdf-btn" onclick="app.removePDFFromHistory('${item.id}')" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                pdfListDiv.appendChild(pdfItem);
+            });
+        } else {
+            recentPdfsDiv.style.display = 'none';
+        }
+    }
+    
+    loadPDFFromHistory(id) {
+        const pdfItem = this.pdfHistoryManager.loadPDFFromHistory(id);
+        if (pdfItem) {
+            // Base64 data'yı File object'e çevir
+            fetch(pdfItem.data)
+                .then(res => res.blob())
+                .then(blob => {
+                    const file = new File([blob], pdfItem.name, { type: 'application/pdf' });
+                    this.processPDF(file);
+                })
+                .catch(error => {
+                    console.error('PDF yüklenirken hata:', error);
+                    this.showToast('PDF yüklenirken hata oluştu', 'error');
+                });
+        }
+    }
+    
+    removePDFFromHistory(id) {
+        if (this.pdfHistoryManager.removeFromHistory(id)) {
+            this.updatePDFHistoryDisplay();
+            this.showToast('PDF geçmişten silindi', 'success');
+        } else {
+            this.showToast('PDF silinirken hata oluştu', 'error');
+        }
+    }
+    
+    clearPDFHistory() {
+        if (this.pdfHistoryManager.clearHistory()) {
+            this.updatePDFHistoryDisplay();
+            this.showToast('Tüm geçmiş temizlendi', 'success');
+        } else {
+            this.showToast('Geçmiş temizlenirken hata oluştu', 'error');
+        }
     }
 
     showProcessing() {
