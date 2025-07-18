@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akıllı Test - PDF Soru Kartları</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header removed for cleaner interface -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section id="upload-section" class="upload-section">
+                <div class="upload-container">
+                    <!-- Ana Yükleme Alanı -->
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <h2>PDF Yükle</h2>
+                        <input type="file" id="pdf-input" accept=".pdf" hidden>
+                        <button class="upload-btn" onclick="document.getElementById('pdf-input').click()">
+                            <i class="fas fa-upload"></i>
+                            PDF Seç
+                        </button>
+                    </div>
+                    
+                    <!-- İndirilen PDF'ler Listesi -->
+                    <div class="recent-pdfs" id="recent-pdfs" style="display: none;">
+                        <h3><i class="fas fa-history"></i> İndirilenler</h3>
+                        <div class="pdf-list" id="pdf-list"></div>
+                        <button class="clear-history-btn" id="clear-history-btn">
+                            <i class="fas fa-trash"></i>
+                            Geçmişi Temizle
+                        </button>
+                    </div>
+                    
+                    <!-- Processing Status -->
+                    <div id="processing-status" class="processing-status hidden">
+                        <div class="processing-content">
+                            <div class="processing-spinner"></div>
+                            <h3 id="processing-title">PDF Yükleniyor...</h3>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                </div>
+                                <div class="progress-text" id="progress-text">0%</div>
+                            </div>
+                            <div class="processing-steps" id="processing-steps">
+                                <div class="step active" id="step-loading">
+                                    <i class="fas fa-download"></i> Yükleniyor...
+                                </div>
+                                <div class="step" id="step-parsing">
+                                    <i class="fas fa-cog"></i> İşleniyor...
+                                </div>
+                                <div class="step" id="step-rendering">
+                                    <i class="fas fa-image"></i> Hazırlanıyor...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Region Selection Section -->
+            <section id="selection-section" class="selection-section hidden">
+                <!-- Selection Header - Simplified -->
+                <div class="selection-header">
+                    <div class="selection-info">
+                        <span class="instruction-text">
+                            <i class="fas fa-mouse-pointer"></i>
+                            Kare çizerek soruyu seçin, sonra tam ekran yapın
+                        </span>
+                        <span class="scroll-hint">
+                            <i class="fas fa-scroll"></i>
+                            Aşağı kaydırarak diğer sayfalara geçin
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Bottom Left Controls -->
+                <div class="bottom-left-controls">
+                    <button class="control-btn back-btn" id="back-to-upload">
+                        <i class="fas fa-plus"></i>
+                        <span>Yeni PDF</span>
+                    </button>
+                    <button class="control-btn selection-mode-btn active" id="selection-mode-btn" title="Kareye Alma Modu Aç/Kapat">
+                        <i class="fas fa-vector-square"></i>
+                        <span class="mode-text">Kareye Alma</span>
+                    </button>
+                    <button class="control-btn clear-btn" id="clear-selections-btn" title="Tüm Seçimleri Temizle">
+                        <i class="fas fa-eraser"></i>
+                        <span>Temizle</span>
+                    </button>
+                    <button class="control-btn primary" id="fullscreen-btn" title="Seçilen Soruyu Tam Ekran Yap" disabled>
+                        <i class="fas fa-expand"></i>
+                        <span>Tam Ekran</span>
+                    </button>
+                </div>
+
+                <!-- Scrollable PDF Container -->
+                <div class="pdf-scrollable-container">
+                    <div id="pdf-container" class="pdf-container">
+                        <!-- PDF pages will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Keyboard Shortcuts Info -->
+                <div class="shortcuts-info">
+                    <small>
+                        <i class="fas fa-keyboard"></i>
+                        Klavye: C Temizle | Escape Geri
+                    </small>
+                </div>
+            </section>
+
+            <!-- Fullscreen Section -->
+            <section id="fullscreen-section" class="fullscreen-section hidden">
+                <!-- Zoom Controls - Draggable -->
+                <div class="zoom-controls" id="zoom-controls">
+                    <div class="drag-handle" id="zoom-drag-handle">
+                        <i class="fas fa-grip-vertical"></i>
+                    </div>
+                    <button class="control-btn zoom-btn" id="zoom-out-btn" title="Uzaklaştır (-)">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button class="control-btn zoom-btn" id="zoom-reset-btn" title="Normal Boyut (0)">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </button>
+                    <button class="control-btn zoom-btn" id="zoom-in-btn" title="Yakınlaştır (+)">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                </div>
+                
+                <!-- Bottom Right Navigation -->
+                <div class="bottom-right-controls">
+                    <button class="control-btn nav-btn" id="prev-region-btn" title="Önceki Soru">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="region-counter">
+                        <span id="region-counter">1</span>/<span id="total-regions">0</span>
+                    </div>
+                    <button class="control-btn nav-btn" id="next-region-btn" title="Sonraki Soru">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="control-btn back-control" id="exit-fullscreen-btn" title="Çıkış (Esc)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <!-- Pure Fullscreen Image -->
+                <div class="pure-fullscreen">
+                    <div class="image-container">
+                        <img id="fullscreen-image" src="" alt="Soru" class="pure-fullscreen-image">
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Error Modal -->
+        <div id="error-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Hata</h3>
+                    <button class="close-btn" id="close-error">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p id="error-message">Bir hata oluştu.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="error-ok">Tamam</button>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    <script src="pdf-history.js"></script>
+    <script src="app.js"></script>
+</body>
+<!-- Footer: Sağ alt köşe, silik ve küçük -->
+<style>
+  .footer-bgc {
+    position: fixed;
+    right: 12px;
+    bottom: 8px;
+    font-size: 0.75rem;
+    color: rgba(0,0,0,0.22);
+    z-index: 9999;
+    pointer-events: auto;
+    user-select: none;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.03em;
+  }
+  .footer-bgc a {
+    color: rgba(0,0,0,0.32);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .footer-bgc a:hover {
+    color: #667eea;
+    text-decoration: underline;
+  }
+</style>
+<div class="footer-bgc">
+  made with <span style="font-size:0.85em;vertical-align:middle;">❤️</span> by <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1" target="_blank" rel="noopener noreferrer">BGC</a>
+</div>
