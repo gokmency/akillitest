@@ -29,10 +29,7 @@
                             PDF Seç
                         </button>
                     </div>
-                    <!-- Footer: Sadece PDF yükleme ekranında -->
-                    <div class="footer-bgc">
-                      made with <span style="font-size:0.85em;vertical-align:middle;">❤️</span> by <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1" target="_blank" rel="noopener noreferrer">BGC</a>
-                    </div>
+                    
                     <!-- İndirilen PDF'ler Listesi -->
                     <div class="recent-pdfs" id="recent-pdfs" style="display: none;">
                         <h3><i class="fas fa-history"></i> İndirilenler</h3>
@@ -196,7 +193,7 @@
     right: 12px;
     bottom: 8px;
     font-size: 0.75rem;
-    color: rgba(0,0,0,0.08);
+    color: rgba(0,0,0,0.22);
     z-index: 9999;
     pointer-events: auto;
     user-select: none;
@@ -204,9 +201,16 @@
     letter-spacing: 0.03em;
   }
   .footer-bgc a {
-    color: rgba(0,0,0,0.14);
+    color: rgba(0,0,0,0.32);
     text-decoration: none;
     font-weight: 600;
     transition: color 0.2s;
   }
+  .footer-bgc a:hover {
+    color: #667eea;
+    text-decoration: underline;
+  }
 </style>
+<div class="footer-bgc">
+  made with <span style="font-size:0.85em;vertical-align:middle;">❤️</span> by <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1" target="_blank" rel="noopener noreferrer">BGC</a>
+</div>
