@@ -1,0 +1,29 @@
+{
+  "name": "akilli-test-pdf-viewer",
+  "version": "1.0.0",
+  "description": "Akıllı tahta için PDF soru görüntüleyici - Manuel bölge seçimi ve tam ekran görüntüleme",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 3000",
+    "start": "python3 -m http.server 3000",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "pdf",
+    "viewer",
+    "smartboard",
+    "education",
+    "classroom",
+    "turkish"
+  ],
+  "author": "Gökmen",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "homepage": "."
+}
