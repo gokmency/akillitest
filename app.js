@@ -266,28 +266,51 @@ class PDFRegionSelectorApp {
             history.forEach(item => {
                 const pdfItem = document.createElement('div');
                 pdfItem.className = 'pdf-history-item';
-                pdfItem.innerHTML = `
-                    <div class="pdf-info">
-                        <div class="pdf-name">
-                            <i class="fas fa-file-pdf"></i>
-                            <span>${item.name}</span>
-                        </div>
-                        <div class="pdf-details">
-                            <span class="pdf-size">${item.size}</span>
-                            <span class="pdf-date">${item.date}</span>
-                        </div>
+                
+                // Create PDF info section
+                const pdfInfo = document.createElement('div');
+                pdfInfo.className = 'pdf-info';
+                pdfInfo.innerHTML = `
+                    <div class="pdf-name">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>${item.name}</span>
                     </div>
-                    <div class="pdf-actions">
-                        <button class="load-pdf-btn" onclick="app.loadPDFFromHistory('${item.id}')" title="PDF'i Yükle">
-                            <i class="fas fa-folder-open"></i>
-                        </button>
-                        <button class="remove-pdf-btn" onclick="app.removePDFFromHistory('${item.id}')" title="Sil">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <div class="pdf-details">
+                        <span class="pdf-size">${item.size}</span>
+                        <span class="pdf-date">${item.date}</span>
                     </div>
                 `;
+                
+                // Create PDF actions section with direct event listeners
+                const pdfActions = document.createElement('div');
+                pdfActions.className = 'pdf-actions';
+                
+                const loadBtn = document.createElement('button');
+                loadBtn.className = 'load-pdf-btn';
+                loadBtn.title = 'PDF\'i Yükle';
+                loadBtn.innerHTML = '<i class="fas fa-folder-open"></i>';
+                loadBtn.onclick = () => {
+                    console.log('Load PDF clicked:', item.id);
+                    window.app.loadPDFFromHistory(item.id);
+                };
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-pdf-btn';
+                removeBtn.title = 'Sil';
+                removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                removeBtn.onclick = () => {
+                    console.log('Remove PDF clicked:', item.id);
+                    window.app.removePDFFromHistory(item.id);
+                };
+                
+                pdfActions.appendChild(loadBtn);
+                pdfActions.appendChild(removeBtn);
+                
+                pdfItem.appendChild(pdfInfo);
+                pdfItem.appendChild(pdfActions);
                 pdfListDiv.appendChild(pdfItem);
             });
+
         } else {
             recentPdfsDiv.style.display = 'none';
         }
@@ -957,5 +980,6 @@ class PDFRegionSelectorApp {
 
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.pdfApp = new PDFRegionSelectorApp();
+    window.app = new PDFRegionSelectorApp();
+    window.pdfApp = window.app; // Backward compatibility
 });
