@@ -865,11 +865,18 @@ class PDFRegionSelectorApp {
         this.zoomControlsElement = document.querySelector('.zoom-controls');
         if (!this.zoomControlsElement) return;
         
+        // Remove existing drag handle to prevent duplicates
+        const existingHandle = this.zoomControlsElement.querySelector('.drag-handle');
+        if (existingHandle) {
+            existingHandle.remove();
+        }
+        
         this.zoomControlsElement.style.cursor = 'move';
         
         const dragHandle = document.createElement('div');
         dragHandle.className = 'drag-handle';
         dragHandle.innerHTML = '<i class="fas fa-grip-vertical"></i>';
+        dragHandle.style.cursor = 'grab';
         this.zoomControlsElement.insertBefore(dragHandle, this.zoomControlsElement.firstChild);
         
         this.zoomControlsElement.addEventListener('mousedown', (e) => this.startDrag(e));
@@ -892,9 +899,14 @@ class PDFRegionSelectorApp {
             y: e.clientY - rect.top
         };
         
+        // Simple approach: just change cursor and disable interactions
+        this.zoomControlsElement.style.cursor = 'grabbing';
         this.zoomControlsElement.style.transition = 'none';
-        this.zoomControlsElement.style.position = 'fixed';
         this.zoomControlsElement.style.zIndex = '2002';
+        
+        // Disable hover effects during drag
+        document.body.style.pointerEvents = 'none';
+        this.zoomControlsElement.style.pointerEvents = 'auto';
         
         e.preventDefault();
     }
@@ -933,7 +945,14 @@ class PDFRegionSelectorApp {
         if (!this.isDragging) return;
         
         this.isDragging = false;
+        
+        // Simple cleanup: just restore cursor and interactions
+        this.zoomControlsElement.style.cursor = 'move';
         this.zoomControlsElement.style.transition = 'all 0.3s ease';
+        this.zoomControlsElement.style.zIndex = '1001';
+        
+        // Re-enable all interactions
+        document.body.style.pointerEvents = '';
     }
 
     // Toast notification system

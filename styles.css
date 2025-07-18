@@ -385,11 +385,15 @@ body {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    display: block;
+    width: 220px;
+    height: 70px;
+    min-width: 220px;
+    max-width: 220px;
+    min-height: 70px;
+    max-height: 70px;
     background: rgba(255, 255, 255, 0.9);
-    padding: 0.5rem;
+    padding: 0.75rem;
     border-radius: 25px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
@@ -398,31 +402,38 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.8);
     z-index: 1001;
     cursor: move;
+    white-space: nowrap;
+    box-sizing: border-box;
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .zoom-controls:hover {
     background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    transform: scale(1.02);
+    /* Removed transform scale to prevent size changes during drag */
 }
 
 .drag-handle {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     color: #666;
     cursor: move;
     border-radius: 50%;
     transition: all 0.3s ease;
-    margin-right: 0.25rem;
+    flex-shrink: 0;
 }
 
 .drag-handle:hover {
     background: rgba(0, 0, 0, 0.1);
     color: #333;
-    transform: scale(1.1);
+    /* Removed transform scale to prevent size changes during drag */
 }
 
 .drag-handle i {
@@ -430,17 +441,23 @@ body {
 }
 
 .zoom-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    font-size: 1.1rem;
     background: rgba(255, 255, 255, 0.8);
     border: 2px solid rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+    border-radius: 50%;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
 .zoom-btn:hover {
     background: white;
-    transform: scale(1.1);
+    /* Removed transform scale to prevent size changes during drag */
     border-color: rgba(0, 123, 255, 0.5);
     box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
@@ -1323,4 +1340,45 @@ body {
 .clear-history-btn:hover {
     background: #5a6268;
     transform: translateY(-1px);
+}
+
+/* Drag Handle Styles */
+.drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: grab;
+    transition: color 0.2s ease;
+    user-select: none;
+    font-size: 0.8rem;
+}
+
+.drag-handle:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Zoom Controls Dragging State */
+.zoom-controls.dragging {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    /* Removed transform scale to prevent size changes during drag */
+}
+
+/* Disable ALL transforms during dragging */
+.zoom-controls.dragging,
+.zoom-controls.dragging *,
+.zoom-controls.dragging .zoom-btn,
+.zoom-controls.dragging .drag-handle {
+    transform: none !important;
+    transition: none !important;
+}
+
+.zoom-controls.dragging .zoom-btn:hover,
+.zoom-controls.dragging .drag-handle:hover {
+    transform: none !important;
 }
