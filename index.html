@@ -186,4 +186,31 @@
     <script src="pdf-history.js"></script>
     <script src="app.js"></script>
 </body>
-</html>
+<!-- Footer: Sağ alt köşe, silik ve küçük -->
+<style>
+  .footer-bgc {
+    position: fixed;
+    right: 12px;
+    bottom: 8px;
+    font-size: 0.75rem;
+    color: rgba(0,0,0,0.12);
+    z-index: 9999;
+    pointer-events: auto;
+    user-select: none;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.03em;
+  }
+  .footer-bgc a {
+    color: rgba(0,0,0,0.18);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .footer-bgc a:hover {
+    color: #667eea;
+    text-decoration: underline;
+  }
+</style>
+<div class="footer-bgc">
+  made with love by <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1" target="_blank" rel="noopener noreferrer">BGC</a>
+</div>
