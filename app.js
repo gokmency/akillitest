@@ -23,10 +23,25 @@ class PDFRegionSelectorApp {
         this.pdfHistoryManager = new PDFHistoryManager();
         this.progressManager = new ProgressManager();
         
+        // Slide Manager - safely access after DOM load
+        this.slideManager = null;
+        
+        // Initialize slide manager after DOM is ready
+        setTimeout(() => {
+            this.slideManager = window.slideManager;
+            if (this.slideManager) {
+                this.updateSavedSlidesDisplay();
+            }
+        }, 100);
+        
         // Draggable controls state
         this.isDragging = false;
         this.dragOffset = { x: 0, y: 0 };
         this.zoomControlsElement = null;
+        
+        // Current PDF data for slide saving
+        this.currentPDFData = null;
+        this.currentPDFName = null;
         
         // Scrolling state
         this.isScrolling = false;
@@ -139,6 +154,22 @@ class PDFRegionSelectorApp {
         // PDF History buttons
         const clearHistoryBtn = document.getElementById('clear-history-btn');
         if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', () => this.clearPDFHistory());
+        
+        // Slide Management buttons
+        const saveSlideBtn = document.getElementById('save-slide-btn');
+        if (saveSlideBtn) saveSlideBtn.addEventListener('click', () => this.showSaveSlideModal());
+        
+        const clearSlidesBtn = document.getElementById('clear-slides-btn');
+        if (clearSlidesBtn) clearSlidesBtn.addEventListener('click', () => this.clearAllSlides());
+        
+        // Save slide modal buttons
+        const closeSaveSlideBtn = document.getElementById('close-save-slide');
+        const cancelSaveSlideBtn = document.getElementById('cancel-save-slide');
+        const confirmSaveSlideBtn = document.getElementById('confirm-save-slide');
+        
+        if (closeSaveSlideBtn) closeSaveSlideBtn.addEventListener('click', () => this.hideSaveSlideModal());
+        if (cancelSaveSlideBtn) cancelSaveSlideBtn.addEventListener('click', () => this.hideSaveSlideModal());
+        if (confirmSaveSlideBtn) confirmSaveSlideBtn.addEventListener('click', () => this.confirmSaveSlide());
     }
 
     setupKeyboardShortcuts() {
@@ -239,17 +270,22 @@ class PDFRegionSelectorApp {
         this.updateProgress(100, 'PDF hazırlanıyor...');
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // PDF'i geçmişe kaydet
+        // PDF'i geçmişe kaydet ve slayt kaydetme için veriyi sakla
         const reader = new FileReader();
         reader.onload = () => {
             const base64Data = reader.result;
             this.pdfHistoryManager.savePDFToHistory(file, base64Data);
             this.updatePDFHistoryDisplay();
+            
+            // Store PDF data for slide saving
+            this.currentPDFData = base64Data;
+            this.currentPDFName = file.name;
         };
         reader.readAsDataURL(file);
         
         this.hideProcessing();
         this.showSelectionSection();
+        this.updateSavedSlidesDisplay(); // Show saved slides
         this.showToast('PDF başarıyla yüklendi!', 'success');
     }
 
@@ -714,6 +750,9 @@ class PDFRegionSelectorApp {
         if (this.undoBtn) {
             this.undoBtn.style.display = this.selectionHistory.length > 0 ? 'flex' : 'none';
         }
+        
+        // Update save slide button state
+        this.updateSaveSlideButtonState();
     }
 
     clearSelections() {
@@ -994,6 +1033,246 @@ class PDFRegionSelectorApp {
                 }
             }, 300);
         }, duration);
+    }
+
+    // ===== SLIDE MANAGEMENT FUNCTIONS =====
+
+    /**
+     * Show save slide modal
+     */
+    showSaveSlideModal() {
+        if (!this.slideManager) {
+            this.showToast('Slayt yöneticisi henüz hazır değil!', 'warning');
+            return;
+        }
+        
+        if (this.selectedRegions.length === 0) {
+            this.showToast('Önce soru bölgeleri seçin!', 'warning');
+            return;
+        }
+
+        const modal = document.getElementById('save-slide-modal');
+        const regionCountSpan = document.getElementById('selected-regions-count');
+        const slideNameInput = document.getElementById('slide-name');
+
+        if (regionCountSpan) {
+            regionCountSpan.textContent = this.selectedRegions.length;
+        }
+
+        if (slideNameInput) {
+            slideNameInput.value = '';
+            slideNameInput.focus();
+        }
+
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    /**
+     * Hide save slide modal
+     */
+    hideSaveSlideModal() {
+        const modal = document.getElementById('save-slide-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Confirm save slide
+     */
+    confirmSaveSlide() {
+        if (!this.slideManager) {
+            this.showToast('Slayt yöneticisi henüz hazır değil!', 'warning');
+            return;
+        }
+        
+        const slideNameInput = document.getElementById('slide-name');
+        const slideName = slideNameInput ? slideNameInput.value.trim() : '';
+
+        if (!slideName) {
+            this.showToast('Lütfen slayt seti adını girin!', 'warning');
+            return;
+        }
+
+        if (this.selectedRegions.length === 0) {
+            this.showToast('Seçili soru bölgesi yok!', 'warning');
+            return;
+        }
+
+        try {
+            // Save slide set
+            this.slideManager.saveSlideSet(
+                slideName,
+                this.selectedRegions,
+                this.currentPDFName || 'Bilinmeyen PDF',
+                this.currentPDFData
+            );
+
+            this.showToast(`"${slideName}" slayt seti kaydedildi!`, 'success');
+            this.hideSaveSlideModal();
+            this.updateSavedSlidesDisplay();
+
+        } catch (error) {
+            this.showToast(error.message, 'error');
+        }
+    }
+
+    /**
+     * Clear all slides
+     */
+    clearAllSlides() {
+        if (!this.slideManager) {
+            this.showToast('Slayt yöneticisi henüz hazır değil!', 'warning');
+            return;
+        }
+        
+        if (confirm('Tüm kaydedilen slaytları silmek istediğinizden emin misiniz?')) {
+            this.slideManager.clearAllSlides();
+            this.showToast('Tüm slaytlar silindi!', 'success');
+            this.updateSavedSlidesDisplay();
+        }
+    }
+
+    /**
+     * Load slide set
+     */
+    loadSlideSet(slideId) {
+        const slide = this.slideManager.getSlideById(slideId);
+        if (!slide) {
+            this.showToast('Slayt seti bulunamadı!', 'error');
+            return;
+        }
+
+        try {
+            // Load PDF data
+            this.currentPDFData = slide.pdfData;
+            this.currentPDFName = slide.pdfName;
+
+            // Process PDF from data URL
+            this.processPDFFromDataURL(slide.pdfData, slide.pdfName);
+
+            // Restore regions after PDF is loaded
+            setTimeout(() => {
+                this.selectedRegions = [...slide.regions];
+                this.redrawAllRegions();
+                this.updateSelectionUI();
+                this.showToast(`"${slide.name}" slayt seti yüklendi!`, 'success');
+            }, 1000);
+
+        } catch (error) {
+            console.error('Slayt yükleme hatası:', error);
+            this.showToast('Slayt yüklenirken hata oluştu!', 'error');
+        }
+    }
+
+    /**
+     * Remove slide set
+     */
+    removeSlideSet(slideId) {
+        const slide = this.slideManager.getSlideById(slideId);
+        if (!slide) return;
+
+        if (confirm(`"${slide.name}" slayt setini silmek istediğinizden emin misiniz?`)) {
+            this.slideManager.deleteSlide(slideId);
+            this.showToast('Slayt seti silindi!', 'success');
+            this.updateSavedSlidesDisplay();
+        }
+    }
+
+    /**
+     * Update saved slides display
+     */
+    updateSavedSlidesDisplay() {
+        if (!this.slideManager) return;
+        
+        const savedSlidesSection = document.getElementById('saved-slides');
+        const slideList = document.getElementById('slide-list');
+
+        if (!savedSlidesSection || !slideList) return;
+
+        const slides = this.slideManager.getAllSlides();
+
+        if (slides.length === 0) {
+            savedSlidesSection.style.display = 'none';
+            return;
+        }
+
+        savedSlidesSection.style.display = 'block';
+        slideList.innerHTML = '';
+
+        slides.forEach(slide => {
+            const slideItem = document.createElement('div');
+            slideItem.className = 'slide-item';
+
+            const createdDate = new Date(slide.createdAt).toLocaleDateString('tr-TR');
+            const slideSize = this.slideManager.getSlideSize(slide);
+
+            slideItem.innerHTML = `
+                <div class="slide-info">
+                    <div class="slide-name">${slide.name}</div>
+                    <div class="slide-details">
+                        <span><i class="fas fa-file-pdf"></i> ${slide.pdfName}</span>
+                        <span><i class="fas fa-layer-group"></i> ${slide.regionCount} soru</span>
+                        <span><i class="fas fa-calendar"></i> ${createdDate}</span>
+                        <span><i class="fas fa-hdd"></i> ${slideSize} MB</span>
+                    </div>
+                </div>
+                <div class="slide-actions">
+                    <button class="load-slide-btn" title="Slayt Setini Yükle">
+                        <i class="fas fa-folder-open"></i>
+                    </button>
+                    <button class="remove-slide-btn" title="Slayt Setini Sil">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+
+            // Add event listeners
+            const loadBtn = slideItem.querySelector('.load-slide-btn');
+            const removeBtn = slideItem.querySelector('.remove-slide-btn');
+
+            loadBtn.onclick = () => this.loadSlideSet(slide.id);
+            removeBtn.onclick = () => this.removeSlideSet(slide.id);
+
+            slideList.appendChild(slideItem);
+        });
+    }
+
+    /**
+     * Update save slide button state
+     */
+    updateSaveSlideButtonState() {
+        const saveSlideBtn = document.getElementById('save-slide-btn');
+        if (saveSlideBtn) {
+            if (this.selectedRegions.length > 0) {
+                saveSlideBtn.disabled = false;
+                saveSlideBtn.title = `${this.selectedRegions.length} seçili soruyu slayt olarak kaydet`;
+            } else {
+                saveSlideBtn.disabled = true;
+                saveSlideBtn.title = 'Seçilen Soruları Slayt Olarak Kaydet';
+            }
+        }
+    }
+
+    /**
+     * Process PDF from data URL
+     */
+    async processPDFFromDataURL(dataURL, fileName) {
+        try {
+            // Convert data URL to array buffer
+            const response = await fetch(dataURL);
+            const arrayBuffer = await response.arrayBuffer();
+            const uint8Array = new Uint8Array(arrayBuffer);
+
+            // Process PDF
+            await this.processPDF(uint8Array, fileName);
+
+        } catch (error) {
+            console.error('PDF data URL işleme hatası:', error);
+            throw error;
+        }
     }
 }
 

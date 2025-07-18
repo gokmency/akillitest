@@ -40,6 +40,16 @@
                         </button>
                     </div>
                     
+                    <!-- Kaydedilen Slaytlar Listesi -->
+                    <div class="saved-slides" id="saved-slides" style="display: none;">
+                        <h3><i class="fas fa-bookmark"></i> Kaydedilen Slaytlar</h3>
+                        <div class="slide-list" id="slide-list"></div>
+                        <button class="clear-slides-btn" id="clear-slides-btn">
+                            <i class="fas fa-trash"></i>
+                            Tüm Slaytları Sil
+                        </button>
+                    </div>
+                    
                     <!-- Processing Status -->
                     <div id="processing-status" class="processing-status hidden">
                         <div class="processing-content">
@@ -96,6 +106,10 @@
                     <button class="control-btn clear-btn" id="clear-selections-btn" title="Tüm Seçimleri Temizle">
                         <i class="fas fa-eraser"></i>
                         <span>Temizle</span>
+                    </button>
+                    <button class="control-btn save-slide-btn" id="save-slide-btn" title="Seçilen Soruları Slayt Olarak Kaydet" disabled>
+                        <i class="fas fa-save"></i>
+                        <span>Slayt Kaydet</span>
                     </button>
                     <button class="control-btn primary" id="fullscreen-btn" title="Seçilen Soruyu Tam Ekran Yap" disabled>
                         <i class="fas fa-expand"></i>
@@ -161,6 +175,30 @@
             </section>
         </main>
 
+        <!-- Slayt Kaydetme Modal -->
+        <div id="save-slide-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-save"></i> Slayt Seti Kaydet</h3>
+                    <button class="close-btn" id="close-save-slide">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="slide-save-info">
+                        <p><i class="fas fa-info-circle"></i> <span id="selected-regions-count">0</span> soru seçildi</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="slide-name">Slayt Seti Adı:</label>
+                        <input type="text" id="slide-name" placeholder="Örn: Matematik Test 1" maxlength="50" required>
+                        <small>Maksimum 50 karakter</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancel-save-slide">İptal</button>
+                    <button class="btn btn-primary" id="confirm-save-slide">Kaydet</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Error Modal -->
         <div id="error-modal" class="modal hidden">
             <div class="modal-content">
@@ -184,6 +222,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
     <script src="pdf-history.js"></script>
+    <script src="slide-manager.js"></script>
     <script src="app.js"></script>
 </body>
 <!-- Footer: Sağ alt köşe, silik ve küçük -->

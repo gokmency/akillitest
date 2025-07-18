@@ -139,6 +139,18 @@ class PDFRegionSelectorApp {
         // PDF History buttons
         const clearHistoryBtn = document.getElementById('clear-history-btn');
         if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', () => this.clearPDFHistory());
+        
+        // Save slide button (if exists)
+        const saveSlideBtn = document.getElementById('save-slide-btn');
+        if (saveSlideBtn) saveSlideBtn.addEventListener('click', () => this.saveCurrentSlide());
+        
+        // Alternative: Listen for dynamically created save buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('[data-action="save-slide"]') || 
+                e.target.closest('[data-action="save-slide"]')) {
+                this.saveCurrentSlide();
+            }
+        });
     }
 
     setupKeyboardShortcuts() {
@@ -966,34 +978,88 @@ class PDFRegionSelectorApp {
     }
 
     showToast(message, type = 'info', duration = 3000) {
-        const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         
         const icon = {
-            success: '✓',
-            error: '✗',
-            warning: '⚠',
-            info: 'ℹ'
-        }[type] || 'ℹ';
+            success: '✅',
+            error: '❌',
+            warning: '⚠️',
+            info: 'ℹ️'
+        }[type] || 'ℹ️';
         
         toast.innerHTML = `
             <span class="toast-icon">${icon}</span>
             <span class="toast-message">${message}</span>
         `;
         
-        container.appendChild(toast);
+        this.toastContainer.appendChild(toast);
         
-        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 100);
         
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => {
-                if (container.contains(toast)) {
-                    container.removeChild(toast);
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
                 }
             }, 300);
         }, duration);
+    }
+    
+    // Save current slide/region function
+    saveCurrentSlide() {
+        if (this.selectedRegions.length === 0) {
+            this.showToast('Kaydedilecek seçili bölge bulunamadı', 'warning');
+            return;
+        }
+        
+        try {
+            // Get current region
+            const currentRegion = this.selectedRegions[this.currentRegionIndex];
+            if (!currentRegion) {
+                this.showToast('Geçerli bölge bulunamadı', 'error');
+                return;
+            }
+            
+            // Create canvas for the selected region
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Get the page canvas
+            const pageCanvas = this.pdfPages[currentRegion.pageIndex].canvas;
+            
+            // Set canvas size to region size
+            canvas.width = currentRegion.width;
+            canvas.height = currentRegion.height;
+            
+            // Draw the region from the page canvas
+            ctx.drawImage(
+                pageCanvas,
+                currentRegion.x, currentRegion.y, currentRegion.width, currentRegion.height,
+                0, 0, currentRegion.width, currentRegion.height
+            );
+            
+            // Convert to blob and download
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `soru_${this.currentRegionIndex + 1}_sayfa_${currentRegion.pageIndex + 1}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showToast('Slayt başarıyla kaydedildi!', 'success');
+            }, 'image/png');
+            
+        } catch (error) {
+            console.error('Slayt kaydetme hatası:', error);
+            this.showToast('Slayt kaydedilirken hata oluştu', 'error');
+        }
     }
 }
 

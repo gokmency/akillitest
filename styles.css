@@ -1382,3 +1382,189 @@ body {
 .zoom-controls.dragging .drag-handle:hover {
     transform: none !important;
 }
+
+/* Saved Slides Styles */
+.saved-slides {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(0, 123, 255, 0.1);
+}
+
+.saved-slides h3 {
+    color: #495057;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.slide-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.slide-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.slide-item:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+.slide-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.slide-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.slide-details {
+    font-size: 0.8rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.slide-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.load-slide-btn, .remove-slide-btn {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.load-slide-btn {
+    background: #28a745;
+    color: white;
+}
+
+.load-slide-btn:hover {
+    background: #218838;
+    transform: scale(1.05);
+}
+
+.remove-slide-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.remove-slide-btn:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+.clear-slides-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.clear-slides-btn:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+/* Save Slide Button Styles */
+.save-slide-btn {
+    background: #17a2b8;
+    color: white;
+}
+
+.save-slide-btn:hover {
+    background: #138496;
+    transform: translateY(-2px);
+}
+
+.save-slide-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Modal Form Styles */
+.slide-save-info {
+    background: #e7f3ff;
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #007bff;
+}
+
+.slide-save-info p {
+    margin: 0;
+    color: #0056b3;
+    font-weight: 500;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: #6c757d;
+    font-size: 0.8rem;
+}
